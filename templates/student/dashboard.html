@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard{% endblock %}
+{% block page_title %}Student Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Welcome, {{ student.name }}</h1>
+        <p>{{ student.department }} &bull; {{ student.year }} (Section {{ student.section }}) &bull; Student ID: <strong>{{ student.student_id }}</strong></p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('student.history') }}" class="btn btn-primary">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>View Full History</span>
+        </a>
+    </div>
+</div>
+
+<!-- Warning Banner if Attendance < 75% -->
+{% if is_warning %}
+    <div class="alert-banner alert-warning" style="margin-bottom: 26px;">
+        <i class="fa-solid fa-triangle-exclamation alert-icon" style="font-size: 24px;"></i>
+        <div>
+            <strong>Mandatory Attendance Warning!</strong>
+            {% if overall_percentage < 75 %}
+                Your overall attendance rate is currently at <strong>{{ overall_percentage }}%</strong>, which is below the required 75% institutional threshold. Please ensure regular attendance in upcoming sessions to prevent examination debarment.
+            {% else %}
+                One or more of your individual subjects is below the required 75% threshold. Please review the highlighted courses below.
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- ========================================================= -->
+<!-- Stat Counter Cards                                        -->
+<!-- ========================================================= -->
+<div class="stats-grid">
+    <div class="stat-card {% if overall_percentage >= 75 %}stat-success{% elif overall_percentage >= 65 %}stat-warning{% else %}stat-danger{% endif %}">
+        <div class="stat-info">
+            <div class="stat-label">Overall Attendance</div>
+            <div class="stat-value" style="color: {% if overall_percentage >= 75 %}var(--success){% elif overall_percentage >= 65 %}var(--warning){% else %}var(--danger){% endif %};">
+                {{ overall_percentage }}%
+            </div>
+            <div class="stat-sub">
+                {% if overall_percentage >= 75 %}
+                    <span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-check"></i> Good Standing</span>
+                {% elif overall_percentage >= 65 %}
+                    <span style="color: var(--warning); font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> Low Attendance</span>
+                {% else %}
+                    <span style="color: var(--danger); font-weight: 600;"><i class="fa-solid fa-circle-exclamation"></i> Critical Standing</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="stat-icon {% if overall_percentage >= 75 %}success{% elif overall_percentage >= 65 %}warning{% else %}danger{% endif %}">
+            <i class="fa-solid fa-percent"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-label">Total Classes</div>
+            <div class="stat-value">{{ total_classes }}</div>
+            <div class="stat-sub">Conducted course sessions</div>
+        </div>
+        <div class="stat-icon primary">
+            <i class="fa-solid fa-chalkboard"></i>
+        </div>
+    </div>
+
+    <div class="stat-card stat-success">
+        <div class="stat-info">
+            <div class="stat-label">Attended Classes</div>
+            <div class="stat-value" style="color: var(--success);">{{ present_count }}</div>
+            <div class="stat-sub">Present days</div>
+        </div>
+        <div class="stat-icon success">
+            <i class="fa-solid fa-user-check"></i>
+        </div>
+    </div>
+
+    <div class="stat-card stat-danger">
+        <div class="stat-info">
+            <div class="stat-label">Missed Classes</div>
+            <div class="stat-value" style="color: var(--danger);">{{ absent_count }}</div>
+            <div class="stat-sub">Absent days</div>
+        </div>
+        <div class="stat-icon danger">
+            <i class="fa-solid fa-user-xmark"></i>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- Radial Gauge & Subject Performance Chart                  -->
+<!-- ========================================================= -->
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 28px;">
+    <!-- Circular Progress Indicator -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Attendance Gauge</span>
+            </div>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div class="radial-progress-wrapper" style="position: relative;">
+                <!-- SVG Circle Gauge -->
+                {% set circumference = 408.4 %}
+                {% set offset = circumference - (circumference * overall_percentage / 100) %}
+                <svg class="radial-circle-svg" viewBox="0 0 160 160">
+                    <circle class="radial-circle-bg" cx="80" cy="80" r="65"></circle>
+                    <circle class="radial-circle-fill {% if overall_percentage >= 75 %}good{% elif overall_percentage >= 65 %}low{% else %}crit{% endif %}" 
+                            cx="80" cy="80" r="65" 
+                            stroke-dasharray="{{ circumference }}" 
+                            stroke-dashoffset="{{ offset }}"></circle>
+                </svg>
+                <div class="radial-content">
+                    <div class="radial-value">{{ overall_percentage }}%</div>
+                    <div class="radial-sub">
+                        {% if overall_percentage >= 75 %}Good{% elif overall_percentage >= 65 %}Low{% else %}Critical{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 13px; color: var(--slate-500); text-align: center; margin-top: 8px;">
+                Criteria: >= 75% for exam eligibility
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Chart -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fa-solid fa-chart-column"></i>
+                <span>Subject Attendance Breakdown</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div style="height: 250px;">
+                <canvas id="studentSubjectChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- Subject-wise Attendance Table                             -->
+<!-- ========================================================= -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Subject-wise Attendance Status</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Subject Code</th>
+                    <th>Subject Name</th>
+                    <th>Total Classes</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Attendance %</th>
+                    <th>Eligibility Standing</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subjects %}
+                    <tr style="{% if sub.percentage < 75 and sub.total_classes > 0 %}background-color: #fffaf0;{% endif %}">
+                        <td><span class="badge badge-secondary">{{ sub.subject_code }}</span></td>
+                        <td><strong>{{ sub.subject_name }}</strong></td>
+                        <td>{{ sub.total_classes or 0 }}</td>
+                        <td><span style="color: var(--success); font-weight: 700;">{{ sub.present_count or 0 }}</span></td>
+                        <td><span style="color: var(--danger); font-weight: 700;">{{ sub.absent_count or 0 }}</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="progress-container" style="width: 70px;">
+                                    <div class="progress-bar {% if sub.percentage >= 75 %}success{% elif sub.percentage >= 65 %}warning{% else %}danger{% endif %}" 
+                                         style="width: {{ sub.percentage }}%;"></div>
+                                </div>
+                                <strong style="color: {% if sub.percentage >= 75 %}var(--success){% elif sub.percentage >= 65 %}var(--warning){% else %}var(--danger){% endif %};">
+                                    {{ sub.percentage }}%
+                                </strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {{ sub.badge_class }}">
+                                {% if sub.percentage < 75 %}
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-check"></i>
+                                {% endif %}
+                                {{ sub.status_text }}
+                            </span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--slate-400); padding: 32px;">
+                            No subjects registered for your department/section.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.studentSubjects = {{ chart_subjects | tojson }};
+    window.studentPercentages = {{ chart_percentages | tojson }};
+</script>
+{% endblock %}

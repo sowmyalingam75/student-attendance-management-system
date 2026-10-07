@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Subject Breakdown{% endblock %}
+{% block page_title %}Subject Attendance Breakdown{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Course Attendance Breakdown</h1>
+        <p>Detailed performance report across all registered academic subjects in {{ student.department }}.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('student.history') }}" class="btn btn-outline">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>View Timeline Logs</span>
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+    {% for s in subjects %}
+        <div class="content-card" style="margin-bottom: 0;">
+            <div class="card-header">
+                <div>
+                    <span class="badge badge-secondary" style="font-size: 13px; margin-bottom: 4px;">{{ s.subject_code }}</span>
+                    <h3 style="font-size: 16px; margin: 0;">{{ s.subject_name }}</h3>
+                </div>
+                <span class="badge {{ s.badge_class }}">{{ s.status_text }}</span>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+                    <span style="font-size: 13px; color: var(--slate-500);">Attendance Percentage</span>
+                    <span style="font-size: 26px; font-weight: 800; color: {% if s.percentage >= 75 %}var(--success){% elif s.percentage >= 65 %}var(--warning){% else %}var(--danger){% endif %};">
+                        {{ s.percentage }}%
+                    </span>
+                </div>
+
+                <div class="progress-container" style="height: 10px; margin-bottom: 20px;">
+                    <div class="progress-bar {% if s.percentage >= 75 %}success{% elif s.percentage >= 65 %}warning{% else %}danger{% endif %}" 
+                         style="width: {{ s.percentage }}%;"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; background: #f8fafc; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-card);">
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--slate-400); font-weight: 700;">Total</div>
+                        <div style="font-size: 17px; font-weight: 800;">{{ s.total_classes or 0 }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--success); font-weight: 700;">Present</div>
+                        <div style="font-size: 17px; font-weight: 800; color: var(--success);">{{ s.present_count or 0 }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--danger); font-weight: 700;">Absent</div>
+                        <div style="font-size: 17px; font-weight: 800; color: var(--danger);">{{ s.absent_count or 0 }}</div>
+                    </div>
+                </div>
+
+                {% if s.teacher_name %}
+                    <div style="margin-top: 14px; font-size: 13px; color: var(--slate-500); display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                        <span>Instructor: <strong>{{ s.teacher_name }}</strong></span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="content-card" style="grid-column: 1 / -1; text-align: center; padding: 36px;">
+            <p style="color: var(--slate-400);">No enrolled subjects found.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

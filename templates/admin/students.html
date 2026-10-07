@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Students{% endblock %}
+{% block page_title %}Student Directory{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Students Management</h1>
+        <p>Register, view, update, and manage student enrollments and academic profiles.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin.add_student') }}" class="btn btn-primary">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Add New Student</span>
+        </a>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-users"></i>
+            <span>Enrolled Students Roster ({{ students | length }})</span>
+        </div>
+        <!-- Live Instant Search Input -->
+        <div style="min-width: 280px;">
+            <div class="input-with-icon">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input type="text" class="form-control table-search-input" data-table="studentsTable" 
+                       placeholder="Search by ID, name, dept, year...">
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table" id="studentsTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Full Name</th>
+                    <th>Contact Info</th>
+                    <th>Department</th>
+                    <th>Year & Sec</th>
+                    <th>Attendance %</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                    <tr>
+                        <td>
+                            <strong style="color: var(--primary);">{{ s.student_id }}</strong>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;">{{ s.name }}</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 13px;">
+                                <i class="fa-regular fa-envelope" style="color: var(--slate-400); margin-right: 4px;"></i> {{ s.email }}
+                            </div>
+                            {% if s.phone %}
+                                <div style="font-size: 12px; color: var(--slate-500);">
+                                    <i class="fa-solid fa-phone" style="color: var(--slate-400); margin-right: 4px;"></i> {{ s.phone }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ s.department }}</td>
+                        <td>
+                            <span class="badge badge-secondary">{{ s.year }} - Sec {{ s.section }}</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong>{{ s.percentage }}%</strong>
+                                {% if s.percentage >= 75 %}
+                                    <span class="badge badge-success">Good</span>
+                                {% elif s.percentage >= 65 %}
+                                    <span class="badge badge-warning">Low</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Critical</span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 11px; color: var(--slate-400); margin-top: 2px;">
+                                {{ s.attended_classes or 0 }}/{{ s.total_classes or 0 }} classes
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 6px;">
+                                <a href="{{ url_for('admin.edit_student', id=s.id) }}" class="btn btn-sm btn-outline" title="Edit student">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger btn-trigger-delete" 
+                                        data-action="{{ url_for('admin.delete_student', id=s.id) }}"
+                                        data-name="{{ s.name }} ({{ s.student_id }})"
+                                        title="Delete student">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--slate-400); padding: 32px;">
+                            No students registered yet. Click "Add New Student" above to create one.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

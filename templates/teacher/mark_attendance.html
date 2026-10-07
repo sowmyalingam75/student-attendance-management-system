@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark Attendance{% endblock %}
+{% block page_title %}Attendance Register{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Mark Daily Attendance</h1>
+        <p>Select course subject and class date to record or update student attendance.</p>
+    </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- Subject & Date Selector Form                               -->
+<!-- ========================================================= -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Select Class Session</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('teacher.mark_attendance') }}" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="form-group" style="margin-bottom: 0; min-width: 320px; flex: 2;">
+                <label for="subject_id" class="form-label">Subject / Course <span style="color: var(--danger);">*</span></label>
+                <select name="subject_id" id="subject_id" class="form-select" required onchange="this.form.submit()">
+                    {% for sub in assigned_subjects %}
+                        <option value="{{ sub.id }}" {% if selected_subject_id == sub.id %}selected{% endif %}>
+                            {{ sub.subject_code }} - {{ sub.subject_name }} ({{ sub.year }}, Sec {{ sub.section }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0; min-width: 200px; flex: 1;">
+                <label for="date" class="form-label">Session Date <span style="color: var(--danger);">*</span></label>
+                <input type="date" name="date" id="date" class="form-control" 
+                       value="{{ selected_date }}" required onchange="this.form.submit()">
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Load Students</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if selected_subject %}
+    <!-- Alert if already marked for date -->
+    {% if already_marked %}
+        <div class="alert-banner alert-info">
+            <i class="fa-solid fa-circle-info alert-icon"></i>
+            <div>
+                <strong>Attendance already marked for this date.</strong>
+                Currently recorded: <strong>{{ marked_summary.present }} Present</strong>, <strong>{{ marked_summary.absent }} Absent</strong> out of {{ marked_summary.total }} students. You can review and update existing entries below.
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Student Attendance Form -->
+    <div class="content-card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">
+                    <i class="fa-solid fa-clipboard-user"></i>
+                    <span>{{ selected_subject.subject_code }} - {{ selected_subject.subject_name }}</span>
+                </div>
+                <div style="font-size: 13px; color: var(--slate-500); margin-top: 4px;">
+                    Department: {{ selected_subject.department }} &bull; {{ selected_subject.year }} - Section {{ selected_subject.section }} &bull; Date: <strong>{{ selected_date | format_date }}</strong>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons & Counters -->
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="font-size: 13px; font-weight: 600; color: var(--slate-600); background: var(--slate-100); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);">
+                    Total: <span id="summaryTotalCount">{{ students | length }}</span> | 
+                    <span style="color: var(--success);">Present: <span id="summaryPresentCount">0</span></span> | 
+                    <span style="color: var(--danger);">Absent: <span id="summaryAbsentCount">0</span></span>
+                </div>
+                <button type="button" id="markAllPresentBtn" class="btn btn-sm btn-success">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>Mark All Present</span>
+                </button>
+                <button type="button" id="markAllAbsentBtn" class="btn btn-sm btn-danger">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>Mark All Absent</span>
+                </button>
+            </div>
+        </div>
+
+        <form id="attendanceForm" action="{{ url_for('teacher.save_attendance') }}" method="POST">
+            <input type="hidden" name="subject_id" value="{{ selected_subject.id }}">
+            <input type="hidden" name="attendance_date" value="{{ selected_date }}">
+
+            <div class="table-responsive">
+                <table class="custom-table attendance-roster-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">#</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Class Section</th>
+                            <th style="text-align: right; width: 220px;">Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in students %}
+                            {% set current_status = s.recorded_status if s.recorded_status else 'Present' %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong style="color: var(--primary);">{{ s.student_id }}</strong></td>
+                                <td><strong>{{ s.name }}</strong></td>
+                                <td>{{ s.year }} (Sec {{ s.section }})</td>
+                                <td style="text-align: right;">
+                                    <div class="status-toggle-group">
+                                        <div class="status-toggle-option">
+                                            <input type="radio" id="present_{{ s.id }}" name="status_{{ s.id }}" value="Present" 
+                                                   {% if current_status == 'Present' %}checked{% endif %}>
+                                            <label for="present_{{ s.id }}" class="status-toggle-label">
+                                                <i class="fa-solid fa-check"></i> Present
+                                            </label>
+                                        </div>
+                                        <div class="status-toggle-option">
+                                            <input type="radio" id="absent_{{ s.id }}" name="status_{{ s.id }}" value="Absent" 
+                                                   {% if current_status == 'Absent' %}checked{% endif %}>
+                                            <label for="absent_{{ s.id }}" class="status-toggle-label">
+                                                <i class="fa-solid fa-xmark"></i> Absent
+                                            </label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--slate-400); padding: 36px;">
+                                    No students enrolled in {{ selected_subject.department }} ({{ selected_subject.year }}, Section {{ selected_subject.section }}).
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if students %}
+                <div style="padding: 20px 24px; background: #fafbfc; border-top: 1px solid var(--border-card); display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Save Attendance</span>
+                    </button>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+{% else %}
+    <div class="content-card" style="text-align: center; padding: 48px 24px;">
+        <i class="fa-solid fa-book" style="font-size: 48px; color: var(--slate-300); margin-bottom: 12px;"></i>
+        <h3 style="color: var(--slate-600);">No Subject Selected</h3>
+        <p style="color: var(--slate-400);">Please select one of your assigned courses from the menu above to begin recording attendance.</p>
+    </div>
+{% endif %}
+{% endblock %}

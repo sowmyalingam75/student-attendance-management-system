@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Subjects{% endblock %}
+{% block page_title %}Academic Subjects{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Course & Subject Management</h1>
+        <p>Define courses, department curricula, and see assigned instructors.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin.assign_subject') }}" class="btn btn-outline">
+            <i class="fa-solid fa-link"></i>
+            <span>Assign to Teachers</span>
+        </a>
+        <a href="{{ url_for('admin.add_subject') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add New Subject</span>
+        </a>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Subject Catalog ({{ subjects | length }})</span>
+        </div>
+        <div style="min-width: 280px;">
+            <div class="input-with-icon">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input type="text" class="form-control table-search-input" data-table="subjectsTable" 
+                       placeholder="Search subjects by code, name, dept...">
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table" id="subjectsTable">
+            <thead>
+                <tr>
+                    <th>Subject Code</th>
+                    <th>Subject Name</th>
+                    <th>Department</th>
+                    <th>Year & Section</th>
+                    <th>Assigned Faculty</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subjects %}
+                    <tr>
+                        <td>
+                            <strong style="color: var(--primary);">{{ sub.subject_code }}</strong>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;">{{ sub.subject_name }}</div>
+                        </td>
+                        <td>{{ sub.department }}</td>
+                        <td>
+                            <span class="badge badge-secondary">{{ sub.year }} - Sec {{ sub.section }}</span>
+                        </td>
+                        <td>
+                            {% if sub.assigned_teachers %}
+                                <span class="badge badge-success" style="font-size: 12px;">
+                                    <i class="fa-solid fa-chalkboard-user"></i> {{ sub.assigned_teachers }}
+                                </span>
+                            {% else %}
+                                <span style="font-size: 12px; color: var(--warning); font-weight: 600;">
+                                    <i class="fa-solid fa-circle-exclamation"></i> Unassigned
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 6px;">
+                                <a href="{{ url_for('admin.edit_subject', id=sub.id) }}" class="btn btn-sm btn-outline" title="Edit subject">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger btn-trigger-delete" 
+                                        data-action="{{ url_for('admin.delete_subject', id=sub.id) }}"
+                                        data-name="{{ sub.subject_name }} ({{ sub.subject_code }})"
+                                        title="Delete subject">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--slate-400); padding: 32px;">
+                            No subjects registered yet. Click "Add New Subject" above.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

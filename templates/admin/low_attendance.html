@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Low Attendance Students{% endblock %}
+{% block page_title %}At-Risk Attendance Monitoring{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Low Attendance Students (< 75%)</h1>
+        <p>Identify students needing immediate intervention to satisfy minimum mandatory attendance rules.</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-primary btn-print-page">
+            <i class="fa-solid fa-print"></i>
+            <span>Print Warning List</span>
+        </button>
+    </div>
+</div>
+
+<div class="alert-banner alert-warning">
+    <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
+    <div>
+        <strong>Mandatory Attendance Warning:</strong> Students listed below have fallen below the mandatory <strong>75% attendance threshold</strong>. Those below <strong>65%</strong> are in critical status and may be debarred from term examinations.
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>
+            <span>At-Risk Students ({{ records | length }})</span>
+        </div>
+        <div style="min-width: 260px;">
+            <div class="input-with-icon">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input type="text" class="form-control table-search-input" data-table="lowAttendanceTable" 
+                       placeholder="Filter at-risk students...">
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table" id="lowAttendanceTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Department & Class</th>
+                    <th>Subject</th>
+                    <th>Classes Attended</th>
+                    <th>Attendance %</th>
+                    <th>Risk Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                    <tr style="{% if r.percentage < 65 %}background-color: #fff5f5;{% endif %}">
+                        <td><strong>{{ r.student_id }}</strong></td>
+                        <td>{{ r.student_name }}</td>
+                        <td>{{ r.department }} ({{ r.year }}, Sec {{ r.section }})</td>
+                        <td><span class="badge badge-secondary">{{ r.subject_code }}</span> {{ r.subject_name }}</td>
+                        <td>{{ r.present_count }} / {{ r.total_classes }}</td>
+                        <td>
+                            <strong style="color: {% if r.percentage < 65 %}var(--danger){% else %}var(--warning){% endif %}; font-size: 15px;">
+                                {{ r.percentage }}%
+                            </strong>
+                        </td>
+                        <td>
+                            <span class="badge {{ r.badge_class }}">
+                                {% if r.percentage < 65 %}
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                {% endif %}
+                                {{ r.status_text }}
+                            </span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--success); padding: 36px;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                            Excellent! No students currently fall below the 75% attendance threshold.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

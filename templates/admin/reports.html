@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Reports{% endblock %}
+{% block page_title %}Institutional Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Attendance Summary Reports</h1>
+        <p>Analyze class aggregates, student participation percentages, and generate official compliance documents.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin.export_csv', subject_id=selected_subject) }}" class="btn btn-outline">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>Download CSV</span>
+        </a>
+        <button type="button" class="btn btn-primary btn-print-page">
+            <i class="fa-solid fa-print"></i>
+            <span>Print Report</span>
+        </button>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="content-card filter-bar">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-filter"></i>
+            <span>Filter Report by Course</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin.reports') }}" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="form-group" style="margin-bottom: 0; min-width: 280px; flex: 1;">
+                <label for="subject_id" class="form-label">Subject</label>
+                <select name="subject_id" id="subject_id" class="form-select">
+                    <option value="">-- All Subjects --</option>
+                    {% for sub in subjects %}
+                        <option value="{{ sub.id }}" {% if selected_subject == (sub.id | string) %}selected{% endif %}>
+                            {{ sub.subject_code }} - {{ sub.subject_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{{ url_for('admin.reports') }}" class="btn btn-outline">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report Table -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-table-list"></i>
+            <span>Performance Records ({{ reports | length }})</span>
+        </div>
+        <div style="min-width: 260px;">
+            <div class="input-with-icon">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input type="text" class="form-control table-search-input" data-table="reportsTable" 
+                       placeholder="Search report entries...">
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table" id="reportsTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Department & Class</th>
+                    <th>Subject</th>
+                    <th>Total Classes</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Attendance %</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                    <tr>
+                        <td><strong>{{ r.student_id }}</strong></td>
+                        <td>{{ r.student_name }}</td>
+                        <td>{{ r.department }} ({{ r.year }}, {{ r.section }})</td>
+                        <td><span class="badge badge-secondary">{{ r.subject_code }}</span> {{ r.subject_name }}</td>
+                        <td>{{ r.total_classes }}</td>
+                        <td><span style="color: var(--success); font-weight: 700;">{{ r.present_count }}</span></td>
+                        <td><span style="color: var(--danger); font-weight: 700;">{{ r.absent_count }}</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="progress-container" style="width: 70px;">
+                                    <div class="progress-bar {% if r.percentage >= 75 %}success{% elif r.percentage >= 65 %}warning{% else %}danger{% endif %}" 
+                                         style="width: {{ r.percentage }}%;"></div>
+                                </div>
+                                <strong>{{ r.percentage }}%</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {{ r.badge_class }}">{{ r.status_text }}</span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: var(--slate-400); padding: 36px;">
+                            No attendance data available for the chosen criteria.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

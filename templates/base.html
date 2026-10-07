@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - Student Attendance System</title>
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Design System CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- ========================================================= -->
+        <!-- Collapsible Sidebar Navigation                            -->
+        <!-- ========================================================= -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>AttendEase</h2>
+                    <span>Attendance Portal</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                {% set role = session.get('role') %}
+
+                {% if role == 'admin' %}
+                    <div class="nav-category">Main Menu</div>
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <div class="nav-category">Academic Management</div>
+                    <a href="{{ url_for('admin.students') }}" class="nav-link {% if request.endpoint in ['admin.students', 'admin.add_student', 'admin.edit_student'] %}active{% endif %}">
+                        <i class="fa-solid fa-user-graduate"></i>
+                        <span>Students</span>
+                    </a>
+                    <a href="{{ url_for('admin.teachers') }}" class="nav-link {% if request.endpoint in ['admin.teachers', 'admin.add_teacher', 'admin.edit_teacher'] %}active{% endif %}">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                        <span>Teachers</span>
+                    </a>
+                    <a href="{{ url_for('admin.subjects') }}" class="nav-link {% if request.endpoint in ['admin.subjects', 'admin.add_subject', 'admin.edit_subject'] %}active{% endif %}">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Subjects</span>
+                    </a>
+                    <a href="{{ url_for('admin.assign_subject') }}" class="nav-link {% if request.endpoint == 'admin.assign_subject' %}active{% endif %}">
+                        <i class="fa-solid fa-link"></i>
+                        <span>Assign Subjects</span>
+                    </a>
+
+                    <div class="nav-category">Attendance & Analytics</div>
+                    <a href="{{ url_for('admin.attendance') }}" class="nav-link {% if request.endpoint == 'admin.attendance' %}active{% endif %}">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <span>All Attendance</span>
+                    </a>
+                    <a href="{{ url_for('admin.reports') }}" class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Reports</span>
+                    </a>
+                    <a href="{{ url_for('admin.low_attendance') }}" class="nav-link {% if request.endpoint == 'admin.low_attendance' %}active{% endif %}">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Low Attendance</span>
+                    </a>
+
+                {% elif role == 'teacher' %}
+                    <div class="nav-category">Faculty Menu</div>
+                    <a href="{{ url_for('teacher.dashboard') }}" class="nav-link {% if request.endpoint == 'teacher.dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('teacher.mark_attendance') }}" class="nav-link {% if request.endpoint == 'teacher.mark_attendance' %}active{% endif %}">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <span>Mark Attendance</span>
+                    </a>
+                    <a href="{{ url_for('teacher.attendance_history') }}" class="nav-link {% if request.endpoint == 'teacher.attendance_history' %}active{% endif %}">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Attendance History</span>
+                    </a>
+
+                    <div class="nav-category">Student Analytics</div>
+                    <a href="{{ url_for('teacher.reports') }}" class="nav-link {% if request.endpoint == 'teacher.reports' %}active{% endif %}">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Reports</span>
+                    </a>
+                    <a href="{{ url_for('teacher.low_attendance') }}" class="nav-link {% if request.endpoint == 'teacher.low_attendance' %}active{% endif %}">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Low Attendance</span>
+                    </a>
+
+                {% elif role == 'student' %}
+                    <div class="nav-category">Student Portal</div>
+                    <a href="{{ url_for('student.dashboard') }}" class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-house-chimney-user"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('student.attendance') }}" class="nav-link {% if request.endpoint == 'student.attendance' %}active{% endif %}">
+                        <i class="fa-solid fa-chart-column"></i>
+                        <span>Subject Breakdown</span>
+                    </a>
+                    <a href="{{ url_for('student.history') }}" class="nav-link {% if request.endpoint == 'student.history' %}active{% endif %}">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>Attendance History</span>
+                    </a>
+                {% endif %}
+
+                <div class="nav-category">Account</div>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+
+            <!-- Sidebar User Profile Footer -->
+            <div class="sidebar-user">
+                <div class="user-avatar-badge">
+                    {{ (session.get('name', 'U')[:1]) | upper }}
+                </div>
+                <div class="user-info">
+                    <div class="user-name" title="{{ session.get('name') }}">{{ session.get('name', 'User') }}</div>
+                    <div class="user-role-tag">{{ session.get('role', 'Member') | capitalize }}</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========================================================= -->
+        <!-- Main Application Viewport                                 -->
+        <!-- ========================================================= -->
+        <main class="app-main">
+            <!-- Top Navigation Bar -->
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button id="sidebarToggleBtn" class="sidebar-toggle-btn" aria-label="Toggle Sidebar">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="topbar-title">{% block page_title %}Overview{% endblock %}</div>
+                </div>
+
+                <div class="topbar-right">
+                    <span class="role-pill {{ session.get('role', 'student') }}">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        {{ session.get('role') | upper }}
+                    </span>
+                    <a href="{{ url_for('auth.logout') }}" class="logout-btn" title="Sign out of your session">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Flash Alert Messages / Toasts -->
+            <div class="toast-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="toast-message alert-{{ category }}">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    {% if category == 'success' %}
+                                        <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 16px;"></i>
+                                    {% elif category == 'danger' %}
+                                        <i class="fa-solid fa-circle-exclamation" style="color: var(--danger); font-size: 16px;"></i>
+                                    {% elif category == 'warning' %}
+                                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning); font-size: 16px;"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-info" style="color: var(--info); font-size: 16px;"></i>
+                                    {% endif %}
+                                    <span>{{ message }}</span>
+                                </div>
+                                <button class="toast-close" aria-label="Close Alert">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Page Body Content Block -->
+            <div class="page-body">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- Global Delete Confirmation Modal                           -->
+    <!-- ========================================================= -->
+    <div id="deleteConfirmModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <div class="modal-title">Confirm Deletion</div>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to permanently delete <strong id="deleteItemName">this record</strong>? This action cannot be undone and will remove associated records.
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="deleteModalCancelBtn" class="btn btn-outline">Cancel</button>
+                <form id="deleteConfirmForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Delete Permanently</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

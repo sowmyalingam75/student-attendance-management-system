@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Student{% endblock %}
+{% block page_title %}Register Student{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Add New Student</h1>
+        <p>Create a new student profile and generate login access.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin.students') }}" class="btn btn-outline">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Students List</span>
+        </a>
+    </div>
+</div>
+
+<div class="content-card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Student Information Form</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('admin.add_student') }}" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="student_id" class="form-label">Student ID <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="student_id" name="student_id" class="form-control" 
+                           placeholder="e.g. STU011" value="{{ form.student_id if form else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="name" class="form-label">Full Name <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control" 
+                           placeholder="e.g. Michael Scott" value="{{ form.name if form else '' }}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address <span style="color: var(--danger);">*</span></label>
+                    <input type="email" id="email" name="email" class="form-control" 
+                           placeholder="e.g. michael.s@college.edu" value="{{ form.email if form else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" 
+                           placeholder="e.g. 9876543210" value="{{ form.phone if form else '' }}">
+                </div>
+            </div>
+
+            <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr;">
+                <div class="form-group">
+                    <label for="department" class="form-label">Department <span style="color: var(--danger);">*</span></label>
+                    <select id="department" name="department" class="form-select" required>
+                        <option value="">-- Select Department --</option>
+                        <option value="Computer Science" selected>Computer Science</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Electronics & Communication">Electronics & Communication</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="year" class="form-label">Year <span style="color: var(--danger);">*</span></label>
+                    <select id="year" name="year" class="form-select" required>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year" selected>3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="section" class="form-label">Section <span style="color: var(--danger);">*</span></label>
+                    <select id="section" name="section" class="form-select" required>
+                        <option value="A" selected>Section A</option>
+                        <option value="B">Section B</option>
+                        <option value="C">Section C</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Student Portal Password <span style="color: var(--danger);">*</span></label>
+                <div class="input-with-icon">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="password" name="password" class="form-control" 
+                           placeholder="Set initial password (e.g. Student@123)" required>
+                    <button type="button" class="password-toggle-btn" data-target="password" aria-label="Toggle password visibility">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <div style="font-size: 12px; color: var(--slate-400); margin-top: 5px;">
+                    This password will be securely hashed with Werkzeug prior to database storage.
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px;">
+                <a href="{{ url_for('admin.students') }}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Save Student</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

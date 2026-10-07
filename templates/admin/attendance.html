@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}All Attendance Records{% endblock %}
+{% block page_title %}Master Attendance Log{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Comprehensive Attendance Logs</h1>
+        <p>Review institutional attendance logs across all departments, subjects, and dates.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin.reports') }}" class="btn btn-outline">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Summary Reports</span>
+        </a>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="content-card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-filter"></i>
+            <span>Filter Attendance Records</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin.attendance') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; gap: 16px; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="subject_id" class="form-label">Subject</label>
+                <select name="subject_id" id="subject_id" class="form-select">
+                    <option value="">-- All Subjects --</option>
+                    {% for sub in subjects %}
+                        <option value="{{ sub.id }}" {% if selected_subject == (sub.id | string) %}selected{% endif %}>
+                            {{ sub.subject_code }} - {{ sub.subject_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ selected_date or '' }}">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">-- All Statuses --</option>
+                    <option value="Present" {% if selected_status == 'Present' %}selected{% endif %}>Present</option>
+                    <option value="Absent" {% if selected_status == 'Absent' %}selected{% endif %}>Absent</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Apply</span>
+                </button>
+                <a href="{{ url_for('admin.attendance') }}" class="btn btn-outline" title="Reset Filters">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Records Table -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <span>Records ({{ records | length }} found)</span>
+        </div>
+        <div style="min-width: 260px;">
+            <div class="input-with-icon">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input type="text" class="form-control table-search-input" data-table="attendanceMasterTable" 
+                       placeholder="Quick search records...">
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table" id="attendanceMasterTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Subject</th>
+                    <th>Recorded By (Teacher)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                    <tr>
+                        <td><strong>{{ r.attendance_date | format_date }}</strong></td>
+                        <td><span class="badge badge-secondary">{{ r.student_id }}</span></td>
+                        <td>{{ r.student_name }}</td>
+                        <td>{{ r.subject_code }} - {{ r.subject_name }}</td>
+                        <td>{{ r.teacher_name }}</td>
+                        <td>
+                            {% if r.status == 'Present' %}
+                                <span class="badge badge-success"><i class="fa-solid fa-check"></i> Present</span>
+                            {% else %}
+                                <span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Absent</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--slate-400); padding: 36px;">
+                            No attendance records match the specified filters.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

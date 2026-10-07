@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+{% block page_title %}Faculty Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Welcome, {{ teacher.name }}</h1>
+        <p>{{ teacher.department }} Department &bull; Teacher ID: <strong>{{ teacher.teacher_id }}</strong></p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('teacher.mark_attendance') }}" class="btn btn-primary">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <span>Mark Attendance</span>
+        </a>
+    </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- Stat Counter Cards                                        -->
+<!-- ========================================================= -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-label">Assigned Subjects</div>
+            <div class="stat-value">{{ total_subjects }}</div>
+            <div class="stat-sub">Courses in your curriculum</div>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fa-solid fa-book-open"></i>
+        </div>
+    </div>
+
+    <div class="stat-card stat-success">
+        <div class="stat-info">
+            <div class="stat-label">Marked Class Sessions</div>
+            <div class="stat-value" style="color: var(--success);">{{ total_marked_classes }}</div>
+            <div class="stat-sub">Recorded attendance days</div>
+        </div>
+        <div class="stat-icon success">
+            <i class="fa-solid fa-calendar-check"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-label">Enrolled Students</div>
+            <div class="stat-value">{{ students_count }}</div>
+            <div class="stat-sub">Under your instruction</div>
+        </div>
+        <div class="stat-icon primary">
+            <i class="fa-solid fa-user-graduate"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Assigned Courses Cards -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Your Assigned Subjects</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            {% for s in assigned_subjects %}
+                <div style="border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 18px; background: #fafbfc; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="badge badge-secondary" style="font-size: 13px;">{{ s.subject_code }}</span>
+                            <span class="badge badge-secondary">{{ s.year }}, Sec {{ s.section }}</span>
+                        </div>
+                        <h3 style="font-size: 16px; margin-bottom: 6px;">{{ s.subject_name }}</h3>
+                        <p style="font-size: 13px; color: var(--slate-500); margin-bottom: 12px;">
+                            {{ s.department }} &bull; {{ s.enrolled_students }} Enrolled
+                        </p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--slate-200); padding-top: 12px; margin-top: 8px;">
+                        <span style="font-size: 12px; color: var(--slate-600); font-weight: 600;">
+                            {{ s.total_sessions or 0 }} Sessions Recorded
+                        </span>
+                        <a href="{{ url_for('teacher.mark_attendance', subject_id=s.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Mark</span>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--slate-400); padding: 24px;">
+                    No subjects assigned yet. Please contact the administrator.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Sessions Activity -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Recent Attendance Sessions</span>
+        </div>
+        <a href="{{ url_for('teacher.attendance_history') }}" class="btn btn-sm btn-outline">
+            <span>View Full History</span>
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Total Students</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Attendance Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in recent_sessions %}
+                    {% set pct = ((r.present_count / r.total_students * 100) | round(1)) if r.total_students > 0 else 0 %}
+                    <tr>
+                        <td><strong>{{ r.attendance_date | format_date }}</strong></td>
+                        <td><span class="badge badge-secondary">{{ r.subject_code }}</span> {{ r.subject_name }}</td>
+                        <td>{{ r.total_students }}</td>
+                        <td><span style="color: var(--success); font-weight: 700;">{{ r.present_count }}</span></td>
+                        <td><span style="color: var(--danger); font-weight: 700;">{{ r.absent_count }}</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="progress-container" style="width: 70px;">
+                                    <div class="progress-bar {% if pct >= 75 %}success{% elif pct >= 65 %}warning{% else %}danger{% endif %}" 
+                                         style="width: {{ pct }}%;"></div>
+                                </div>
+                                <strong>{{ pct }}%</strong>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--slate-400); padding: 28px;">
+                            No recent attendance sessions found.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}500 - Internal Server Error{% endblock %}
+{% block page_title %}Internal Error{% endblock %}
+
+{% block content %}
+<div class="content-card" style="text-align: center; padding: 60px 24px; max-width: 600px; margin: 40px auto;">
+    <div style="font-size: 72px; color: var(--danger); margin-bottom: 16px;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <h1 style="font-size: 32px; margin-bottom: 12px;">500 - System Error</h1>
+    <p style="color: var(--slate-500); margin-bottom: 28px;">
+        An unexpected error occurred while processing your request. Please try again or contact the system administrator.
+    </p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="fa-solid fa-house"></i>
+        <span>Return to Dashboard</span>
+    </a>
+</div>
+{% endblock %}

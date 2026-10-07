@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}My Attendance History{% endblock %}
+{% block page_title %}Session Timeline{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>My Attendance History</h1>
+        <p>Complete historical log of your attendance status across all enrolled classes.</p>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="content-card filter-bar">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-filter"></i>
+            <span>Filter Timeline</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('student.history') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; gap: 16px; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="subject_id" class="form-label">Subject</label>
+                <select name="subject_id" id="subject_id" class="form-select">
+                    <option value="">-- All Subjects --</option>
+                    {% for s in subjects %}
+                        <option value="{{ s.id }}" {% if selected_subject == s.id %}selected{% endif %}>
+                            {{ s.subject_code }} - {{ s.subject_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="month" class="form-label">Month</label>
+                <select name="month" id="month" class="form-select">
+                    <option value="">-- All Months --</option>
+                    {% for m in distinct_months %}
+                        <option value="{{ m.month_val }}" {% if selected_month == m.month_val %}selected{% endif %}>
+                            {{ m.month_val }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">-- All Statuses --</option>
+                    <option value="Present" {% if selected_status == 'Present' %}selected{% endif %}>Present</option>
+                    <option value="Absent" {% if selected_status == 'Absent' %}selected{% endif %}>Absent</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{{ url_for('student.history') }}" class="btn btn-outline">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- History Table -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Attendance Records ({{ records | length }})</span>
+        </div>
+        <div style="min-width: 260px;">
+            <div class="input-with-icon">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input type="text" class="form-control table-search-input" data-table="studentHistoryTable" 
+                       placeholder="Quick search records...">
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table" id="studentHistoryTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Subject Code</th>
+                    <th>Subject Name</th>
+                    <th>Faculty Instructor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                    <tr>
+                        <td><strong>{{ r.attendance_date | format_date }}</strong></td>
+                        <td><span class="badge badge-secondary">{{ r.subject_code }}</span></td>
+                        <td>{{ r.subject_name }}</td>
+                        <td>{{ r.teacher_name }}</td>
+                        <td>
+                            {% if r.status == 'Present' %}
+                                <span class="badge badge-success"><i class="fa-solid fa-check"></i> Present</span>
+                            {% else %}
+                                <span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Absent</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--slate-400); padding: 36px;">
+                            No attendance records match your filter criteria.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

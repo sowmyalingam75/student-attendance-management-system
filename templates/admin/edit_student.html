@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Student - {{ student.name }}{% endblock %}
+{% block page_title %}Update Student Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Edit Student: {{ student.name }}</h1>
+        <p>Update enrollment details for Student ID: <strong>{{ student.student_id }}</strong></p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin.students') }}" class="btn btn-outline">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Students List</span>
+        </a>
+    </div>
+</div>
+
+<div class="content-card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-user-pen"></i>
+            <span>Edit Profile - {{ student.student_id }}</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('admin.edit_student', id=student.id) }}" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Student ID (Cannot be changed)</label>
+                    <input type="text" class="form-control" value="{{ student.student_id }}" disabled 
+                           style="background-color: var(--slate-100); cursor: not-allowed;">
+                </div>
+                <div class="form-group">
+                    <label for="name" class="form-label">Full Name <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control" 
+                           value="{{ student.name }}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address <span style="color: var(--danger);">*</span></label>
+                    <input type="email" id="email" name="email" class="form-control" 
+                           value="{{ student.email }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" 
+                           value="{{ student.phone or '' }}">
+                </div>
+            </div>
+
+            <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr;">
+                <div class="form-group">
+                    <label for="department" class="form-label">Department <span style="color: var(--danger);">*</span></label>
+                    <select id="department" name="department" class="form-select" required>
+                        <option value="Computer Science" {% if student.department == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+                        <option value="Information Technology" {% if student.department == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+                        <option value="Electronics & Communication" {% if student.department == 'Electronics & Communication' %}selected{% endif %}>Electronics & Communication</option>
+                        <option value="Mechanical Engineering" {% if student.department == 'Mechanical Engineering' %}selected{% endif %}>Mechanical Engineering</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="year" class="form-label">Year <span style="color: var(--danger);">*</span></label>
+                    <select id="year" name="year" class="form-select" required>
+                        <option value="1st Year" {% if student.year == '1st Year' %}selected{% endif %}>1st Year</option>
+                        <option value="2nd Year" {% if student.year == '2nd Year' %}selected{% endif %}>2nd Year</option>
+                        <option value="3rd Year" {% if student.year == '3rd Year' %}selected{% endif %}>3rd Year</option>
+                        <option value="4th Year" {% if student.year == '4th Year' %}selected{% endif %}>4th Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="section" class="form-label">Section <span style="color: var(--danger);">*</span></label>
+                    <select id="section" name="section" class="form-select" required>
+                        <option value="A" {% if student.section == 'A' %}selected{% endif %}>Section A</option>
+                        <option value="B" {% if student.section == 'B' %}selected{% endif %}>Section B</option>
+                        <option value="C" {% if student.section == 'C' %}selected{% endif %}>Section C</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Reset Password (Optional)</label>
+                <div class="input-with-icon">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="password" name="password" class="form-control" 
+                           placeholder="Leave blank to keep existing password">
+                    <button type="button" class="password-toggle-btn" data-target="password" aria-label="Toggle password visibility">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <div style="font-size: 12px; color: var(--slate-400); margin-top: 5px;">
+                    Only type in this field if you want to update the student's password.
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px;">
+                <a href="{{ url_for('admin.students') }}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Update Student</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

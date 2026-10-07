@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Assign Subjects to Teachers{% endblock %}
+{% block page_title %}Faculty Subject Allocation{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Teacher-Subject Assignment</h1>
+        <p>Allocate academic course subjects to qualified faculty instructors.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin.subjects') }}" class="btn btn-outline">
+            <i class="fa-solid fa-book-open"></i>
+            <span>View Subjects</span>
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start;">
+    <!-- Assignment Form Card -->
+    <div class="content-card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fa-solid fa-link"></i>
+                <span>New Allocation</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('admin.assign_subject') }}" method="POST">
+                <div class="form-group">
+                    <label for="teacher_id" class="form-label">Select Faculty Teacher <span style="color: var(--danger);">*</span></label>
+                    <select id="teacher_id" name="teacher_id" class="form-select" required>
+                        <option value="">-- Choose Teacher --</option>
+                        {% for t in teachers %}
+                            <option value="{{ t.id }}">{{ t.name }} ({{ t.teacher_id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject_id" class="form-label">Select Subject <span style="color: var(--danger);">*</span></label>
+                    <select id="subject_id" name="subject_id" class="form-select" required>
+                        <option value="">-- Choose Subject --</option>
+                        {% for s in subjects %}
+                            <option value="{{ s.id }}">{{ s.subject_code }} - {{ s.subject_name }} ({{ s.year }}, Sec {{ s.section }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Assign Subject</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Allocations Table Card -->
+    <div class="content-card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Current Allocations ({{ assignments | length }})</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Teacher</th>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Class Target</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assignments %}
+                        <tr>
+                            <td>
+                                <strong>{{ a.teacher_name }}</strong>
+                                <div style="font-size: 11px; color: var(--slate-400);">{{ a.teacher_id }}</div>
+                            </td>
+                            <td><span class="badge badge-secondary">{{ a.subject_code }}</span></td>
+                            <td>{{ a.subject_name }}</td>
+                            <td>{{ a.year }} - Sec {{ a.section }}</td>
+                            <td style="text-align: right;">
+                                <form action="{{ url_for('admin.unassign_subject', id=a.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: var(--danger-border);" 
+                                            onclick="return confirm('Remove this subject assignment?');" title="Unassign subject">
+                                        <i class="fa-solid fa-unlink"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--slate-400); padding: 32px;">
+                                No subject allocations created yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
