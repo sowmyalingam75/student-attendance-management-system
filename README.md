@@ -295,3 +295,72 @@ $$\text{Attendance Percentage} = \left(\frac{\text{Present Days}}{\text{Total Co
 2. **Automated Parent SMS/Email Notifications**: Alert guardians when student attendance falls below 75%.
 3. **QR Code Attendance**: Dynamic one-time QR codes scanned by students during lectures.
 4. **Leave Application Management**: Student leave requests with faculty approval workflows.
+
+
+---
+
+## 📝 Leave Management
+
+- Students can apply for leave with start date, end date, leave type, and reason.
+- Students can view their leave request history and status.
+- Teachers can review, approve, or reject student leave requests.
+- Admin can manage and monitor all leave requests.
+- Leave proof/document upload support.
+- Leave request status tracking: Pending, Approved, and Rejected.
+
+## 🔎 Attendance Audit
+
+- Records attendance creation, modification, and deletion activities.
+- Tracks who marked or modified attendance.
+- Stores the date and time of attendance changes.
+- Maintains previous and updated attendance status.
+- Admin and teachers can review attendance activity.
+- Audit records are read-only for transparency and accountability.
+
+---
+
+## 🛠️ Technologies Used
+
+- **Frontend:** HTML5, CSS3, JavaScript
+- **Backend:** Python, Flask
+- **Database:** MySQL / SQLite
+- **Charts:** Chart.js
+- **Authentication:** Role-based authentication
+- **Version Control:** Git & GitHub
+
+---
+
+## 👥 User Roles
+
+### 👨‍💼 Admin
+- Manage students, teachers, and subjects
+- View attendance statistics
+- Monitor low-attendance students
+- Manage leave requests
+- View attendance audit logs
+- Generate reports
+
+### 👨‍🏫 Teacher
+- View assigned subjects
+- Mark student attendance
+- View attendance history
+- Monitor low-attendance students
+- Approve/reject leave requests
+- View attendance audit information
+
+### 👨‍🎓 Student
+- View personal dashboard
+- Check attendance percentage
+- View attendance history
+- Apply for leave
+- Track leave request status
+
+---
+
+## 🚀 How to Run
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/sowmyalingam75/student-attendance-management-system.git
+cd student-attendance-management-system
